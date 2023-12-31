@@ -1,15 +1,17 @@
 import numpy as np
 
 
-def quantum_register(num):
+def quantum_register(num, value=0):
+    """Initializes a quantum register with all |0> or all |1>"""
     shape = (2,) * num
-    first = (0,) * num
+    first = (0,) * num; last = (1,) * num;
     reg = np.zeros(shape, dtype=np.complex128)
-    reg[first] = 1+0j
+    reg[first if not value else last] = 1+0j
     return reg
 
 
 def random_register(num):
+    """Initializes a quantum register with random values"""
     shape = (2,) * num
     reg = np.random.randn(*shape) + np.random.randn(*shape) * 1j
     reg = reg / np.linalg.norm(reg)
