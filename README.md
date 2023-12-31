@@ -2,7 +2,8 @@
 
 ## About this Project
 
-This aims to implement the BB84 QKD protocol using Python and Numpy. It currently consists of a quantum number generator that can hopefully be used to generate the keys and bases.
+This project aims to implement the BB84 QKD protocol using Python and Numpy.
+Currently has a basic BB84 implementation allowing users to create and send bits to each other.
 
 ## References
 
