@@ -64,4 +64,4 @@ class QKD:
         """
         
         bit_check = [True if alice == bob else False for alice, bob in zip(self.bits, other_bits)]
-        return bit_check.count(True) / len(bit_check) > threshold
+        return bit_check.count(True) / len(bit_check) >= threshold
