@@ -10,7 +10,7 @@ class QKD:
         self.bits = self.random_bits(length) if bits is None else bits
         assert len(self.basis) == len(self.bits) == length
 
-    def random_bits(self, num: int) -> tuple[int]:
+    def random_bits(self, num: int) -> list[int]:
         reg = quantum_register(num)
         for i in range(num):
             reg = H(i)(reg)
