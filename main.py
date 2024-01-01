@@ -33,10 +33,7 @@ def main(bits: int, toggle_eve: bool):
         print("Eavesdropper detected!")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-                        prog="A BB84 Simulator",
-                        description="A simulator of the BB84 QKD protocol written using Python and Numpy."
-        )
+    parser = argparse.ArgumentParser(description="A simulator of the BB84 QKD protocol written using Python and Numpy.")
     parser.add_argument("-b", "--bits", type=int, help="The number of bits to use", default=16)
     parser.add_argument("-e", "--toggle-eve", action="store_true", help="Drop a eavesdropper between Alice & Bob")
 
