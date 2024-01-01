@@ -57,6 +57,7 @@ class QKD:
 
         Args:
             other_bits (list[int]): The other party's bits
+            threshold  (float): The threshold before this function returns false
 
         Returns:
             bool: Whether a specified percentage of bits match
