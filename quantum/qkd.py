@@ -50,3 +50,17 @@ class QKD:
         """
 
         self.bits = [bit for base, other, bit in zip(self.basis, other_basis, self.bits) if base == other]
+
+    def check_bits(self, other_bits: list[int], threshold: float = 1.0) -> bool:
+        """Checks if a certain percentage (100% default) of bits
+        match between the sender and receiver.
+
+        Args:
+            other_bits (list[int]): The other party's bits
+
+        Returns:
+            bool: Whether a specified percentage of bits match
+        """
+        
+        bit_check = [True if alice == bob else False for alice, bob in zip(self.bits, other_bits)]
+        return bit_check.count(True) / len(bit_check) > threshold
