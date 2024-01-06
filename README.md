@@ -34,6 +34,7 @@ The SQP message should contain the following fields:
 There are a variety of method types that are used to send different kinds of data.
 All the methods are listed below.
 
+- `MSG`: A message containing text in the data segment.
 - `RES`: A response method to return data to the requester.
 - `ERR`: A error method indicating that an error has occurred.
 - `GET`: Asks the target to generate a bunch of qubits to derive the key from.
