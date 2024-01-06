@@ -29,6 +29,17 @@ The SQP message should contain the following fields:
 - Sender: The hostname of the sender
 - Data: Data to be transferred, can be left as an empty string
 
+### Method Types
+
+There are a variety of method types that are used to send different kinds of data.
+All the methods are listed below.
+
+- `RES`: A response method to return data to the requester.
+- `ERR`: A error method indicating that an error has occurred.
+- `GET`: Asks the target to generate a bunch of qubits to derive the key from.
+- `BASIS`: Compares the basis of each client. The receiver should send a RES back to the sender.
+- `CHECK`: Picks select bits to check for eavesdroppers/errors.
+
 ## References
 
 - [https://github.com/MNQuantum/QuantumSimulator/blob/master/python/quantum_simulator.py](https://github.com/MNQuantum/QuantumSimulator/blob/master/python/quantum_simulator.py)
