@@ -43,3 +43,4 @@ All the methods are listed below.
 ## References
 
 - [https://github.com/MNQuantum/QuantumSimulator/blob/master/python/quantum_simulator.py](https://github.com/MNQuantum/QuantumSimulator/blob/master/python/quantum_simulator.py)
+- [https://github.com/Kairos-T/BB84-Simulator](https://github.com/Kairos-T/BB84-Simulator)
