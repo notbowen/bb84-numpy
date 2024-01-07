@@ -4,17 +4,18 @@ from quantum.base import quantum_register, measure, measure_all
 from quantum.gates import H
 
 
+def random_bits(num: int) -> list[int]:
+    reg = quantum_register(num)
+    for i in range(num):
+        reg = H(i)(reg)
+    return list(measure_all()(reg))
+
+
 class QKD:
     def __init__(self, length: int = 16, basis: list[int] | None = None, bits: list[int] | None = None) -> None:
-        self.basis = self.random_bits(length) if basis is None else basis
-        self.bits = self.random_bits(length) if bits is None else bits
+        self.basis = random_bits(length) if basis is None else basis
+        self.bits = random_bits(length) if bits is None else bits
         assert len(self.basis) == len(self.bits) == length
-
-    def random_bits(self, num: int) -> list[int]:
-        reg = quantum_register(num)
-        for i in range(num):
-            reg = H(i)(reg)
-        return list(measure_all()(reg))
 
     def send(self) -> list[np.ndarray]:
         # 1 is hadamard, 0 is computational
