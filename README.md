@@ -34,12 +34,28 @@ The SQP message should contain the following fields:
 There are a variety of method types that are used to send different kinds of data.
 All the methods are listed below.
 
-- `MSG`: A message containing text in the data segment.
+- `MSG`: A message containing encrypted text in the data segment.
 - `RES`: A response method to return data to the requester.
 - `ERR`: A error method indicating that an error has occurred.
 - `GET`: Asks the target to generate a bunch of qubits to derive the key from.
 - `BASIS`: Compares the basis of each client. The receiver should send a RES back to the sender.
 - `CHECK`: Picks select bits to check for eavesdroppers/errors.
+
+### MSG - Message
+
+A method to send encrypted text to the specified `target`. Sender and target should
+have finished the QKD and established a shared symmetrical key before this method
+is invoked. If the sender has the key but the target does not, and `ERR` is returned
+by the target.
+
+Params:
+
+- `data`: Encrypted data using the predetermined shared key
+
+Returns:
+
+- `RES`: The response from the other party, encrypted using the same shared key
+- `ERR`: The target does not have a shared key, client should perform QKD again
 
 ## References
 
