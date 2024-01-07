@@ -5,6 +5,10 @@ import sys
 from protocol import SQPMessage
 
 
+def cprint(msg: str) -> None:
+    print(f"\r{msg}\n> ", end="")
+
+
 class SQPClient:
     def __init__(self, hostname: str) -> None:
         assert len(hostname) <= 64
@@ -12,6 +16,8 @@ class SQPClient:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.shared_keys = {}
+        self.listening_thread = None
+        self.response_queue = []
 
     def connect(self, host: str, port: int):
         self.socket.connect((host, port))
@@ -34,7 +40,7 @@ class SQPClient:
 
         try:
             self.socket.send(message.to_bytes())
-        except:
+        except ConnectionResetError:
             print("Server has been shut down.")
             sys.exit(0)
 
@@ -42,9 +48,11 @@ class SQPClient:
         try:
             msg = self.socket.recv(1024)
             return msg
-        except:
+        except ConnectionResetError:
             print("Server has been shut down.")
             sys.exit(0)
+        except OSError:
+            pass
 
     def handle_message(self, msg: SQPMessage) -> None:
         if msg.method == "GET":
@@ -53,17 +61,32 @@ class SQPClient:
             self.handle_basis(msg)
         elif msg.method == "CHECK":
             self.handle_check(msg)
+        elif msg.method[0:3] == "RES" or msg.method[0:3] == "ERR":
+            self.handle_res(msg)
 
         # Invalid methods are dropped
 
     def handle_get(self, msg: SQPMessage) -> None:
-        print("handling get...")
+        self.send_message("RES GET", msg.sender, "response message")
 
     def handle_basis(self, msg: SQPMessage) -> None:
-        print("handling basis...")
+        pass
 
     def handle_check(self, msg: SQPMessage) -> None:
-        print("handling check...")
+        pass
+
+    def handle_res(self, msg: SQPMessage) -> None:
+        self.response_queue.append(msg)
+
+    def get_response_of_type(self, method: str) -> SQPMessage:
+        while True:
+            for msg in self.response_queue:
+                if msg.method == "RES " + method:
+                    self.response_queue.remove(msg)
+                    return msg
+                elif msg.method == "ERR " + method:
+                    self.response_queue.remove(msg)
+                    return msg
 
     def listen_loop(self) -> None:
         while True:
@@ -75,12 +98,21 @@ class SQPClient:
             self.handle_message(message)
 
     def start_listening(self) -> None:
-        listening_thread = threading.Thread(target=self.listen_loop)
-        listening_thread.daemon = True
-        listening_thread.start()
+        self.listening_thread = threading.Thread(target=self.listen_loop)
+        self.listening_thread.daemon = True
+        self.listening_thread.start()
 
     def begin_qkd(self, target: str) -> None:
         self.send_message("GET", target, "")
+        response = self.get_response_of_type("GET")
+        if response.method == "ERR":
+            cprint("Error: " + response.data)
+            return
+        cprint(response.data)
+
+    def disconnect(self) -> None:
+        self.send_message("DC", "server", "")
+        self.socket.close()
 
 
 if __name__ == "__main__":
@@ -90,9 +122,14 @@ if __name__ == "__main__":
     client.connect("127.0.0.1", 8484)
     client.start_listening()
 
+    print("> ", end="")
     while True:
-        cmd = input("> ")
+        cmd = input("")
 
         if cmd.startswith("CONNECT"):
             target = cmd.split(" ")[1]
             client.begin_qkd(target)
+
+        elif cmd == "EXIT":
+            client.disconnect()
+            sys.exit(0)
