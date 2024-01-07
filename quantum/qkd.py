@@ -1,4 +1,6 @@
 import numpy as np
+import base64
+import pickle
 
 from quantum.base import quantum_register, measure, measure_all
 from quantum.gates import H
@@ -17,7 +19,7 @@ class QKD:
         self.bits = random_bits(length) if bits is None else bits
         assert len(self.basis) == len(self.bits) == length
 
-    def send(self) -> list[np.ndarray]:
+    def send(self) -> str:
         # 1 is hadamard, 0 is computational
         data = []
 
@@ -27,9 +29,14 @@ class QKD:
                 reg = H(0)(reg)
             data.append(reg)
 
+        data = pickle.dumps(np.array(data))
+        data = base64.b64encode(data).decode()
         return data
 
-    def recv(self, data: list[np.ndarray]) -> None:
+    def recv(self, data: str) -> None:
+        data = base64.b64decode(data)
+        data = pickle.loads(data)
+
         bits = []
 
         # Align basis
