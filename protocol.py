@@ -20,8 +20,7 @@ class SQPMessage:
         header, self.data = msg_decoded.split("\n\n")
 
         dest_info, self.sender = header.splitlines()
-        self.method, self.target = dest_info.split(" ")
+        self.method, self.target = dest_info.rsplit(" ", 1)
 
     def to_bytes(self) -> bytes:
         return f"{self.method} {self.target}\n{self.sender}\n\n{self.data}".encode()
-
