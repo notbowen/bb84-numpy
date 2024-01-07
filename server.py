@@ -10,7 +10,7 @@ class SQPServer:
         self.host = host
         self.port = port
         self.connections = {}
-    
+
     def disconnect(self, target: str) -> None:
         if target not in self.connections:
             return
@@ -29,7 +29,7 @@ class SQPServer:
 
             if not msg:
                 continue
-            
+
             message = SQPMessage(msg)
 
             if message.method == "DC":
@@ -41,7 +41,8 @@ class SQPServer:
                 logger.debug(f"{message.method} request sent to {message.target}")
             except KeyError:
                 error = SQPMessage()
-                error.create("ERR" ,hostname, "server", "Host not found!")
+                error.create("ERR " + message.method, hostname, "server", "Host not found!")
+                logger.debug(f"ERR {message.method} request sent to {hostname}")
                 c.send(error.to_bytes())
 
     def start(self):
