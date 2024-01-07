@@ -40,13 +40,13 @@ class QKD:
         # Measure and save all bits
         self.bits = [measure(0)(bit) for bit in bits]
 
-    def prune(self, other_basis: np.ndarray) -> None:
+    def prune(self, other_basis: list[int]) -> None:
         """Prunes one's bits and basis based on another user's basis.
         Overwrites self.bits with the valid bits. self.basis is not changed
         as it is still needed for the next pruning operation
 
         Args:
-            other_basis (np.ndarray): The basis of the other user
+            other_basis (list[int]): The basis of the other user
         """
 
         self.bits = [bit for base, other, bit in zip(self.basis, other_basis, self.bits) if base == other]
