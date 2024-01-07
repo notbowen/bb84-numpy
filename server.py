@@ -32,6 +32,10 @@ class SQPServer:
             
             message = SQPMessage(msg)
 
+            if message.method == "DC":
+                self.disconnect(hostname)
+                return
+
             try:
                 self.connections[message.target].send(msg)
                 logger.debug(f"{message.method} request sent to {message.target}")
