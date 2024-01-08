@@ -41,22 +41,6 @@ All the methods are listed below.
 - `BASIS`: Compares the basis of each client. The receiver should send a RES back to the sender.
 - `CHECK`: Picks select bits to check for eavesdroppers/errors.
 
-### MSG - Message
-
-A method to send encrypted text to the specified `target`. Sender and target should
-have finished the QKD and established a shared symmetrical key before this method
-is invoked. If the sender has the key but the target does not, and `ERR` is returned
-by the target.
-
-Params:
-
-- `data`: Encrypted data using the predetermined shared key
-
-Returns:
-
-- `RES MSG`: The response from the other party, encrypted using the same shared key
-- `ERR`: The target does not have a shared key, client should perform QKD again
-
 ## References
 
 - [https://github.com/MNQuantum/QuantumSimulator/blob/master/python/quantum_simulator.py](https://github.com/MNQuantum/QuantumSimulator/blob/master/python/quantum_simulator.py)
