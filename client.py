@@ -1,6 +1,7 @@
 import threading
 import socket
 import sys
+import random
 
 from protocol import SQPMessage
 from quantum.qkd import QKD
@@ -76,10 +77,21 @@ class SQPClient:
         recv_basis = list(map(int, msg.data))
         same_indices = [str(idx) for idx, basis in enumerate(zip(self.qkd_client.basis, recv_basis)) if
                         basis[0] == basis[1]]
+        self.shared_keys[msg.sender] = ""
+        for idx in same_indices:
+            self.shared_keys[msg.sender] += str(self.qkd_client.bits[int(idx)])
         self.send_message("RES BASIS", msg.sender, ",".join(same_indices))
 
     def handle_check(self, msg: SQPMessage) -> None:
-        pass
+        data = msg.data.splitlines()
+        indices = data[0].split(",")
+        bits = data[1].split(",")
+
+        indices = list(map(int, indices))
+        bits = list(map(int, bits))
+
+        result = self.qkd_client.check_bits_at_indices(bits, indices, 1)
+        self.send_message("RES CHECK", msg.sender, str(result))
 
     def handle_res(self, msg: SQPMessage) -> None:
         self.response_queue.append(msg)
@@ -130,6 +142,16 @@ class SQPClient:
         for idx in basis:
             self.shared_keys[target] += str(self.qkd_client.bits[int(idx)])
         cprint("Final shared key: " + self.shared_keys[target])
+
+        indices = [random.randint(0, self.qkd_client.length - 1) for _ in range(4)]
+        bits = [int(self.qkd_client.bits[idx]) for idx in indices]
+        self.send_message("CHECK", target, ",".join(map(str, indices)) + "\n" + ",".join(map(str, bits)))
+
+        response = self.get_response_of_type("CHECK")
+        if response.method == "ERR CHECK":
+            cprint("Error: " + response.data)
+            return
+        cprint("Check result: " + response.data)
 
     def disconnect(self) -> None:
         self.send_message("DC", "server", "")
