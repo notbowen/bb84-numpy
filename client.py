@@ -4,7 +4,7 @@ import sys
 import random
 
 from protocol import SQPMessage
-from quantum.qkd import QKD
+from quantum.qkd import QKD, check_cropped_bits
 
 
 def cprint(msg: str) -> None:
@@ -88,9 +88,10 @@ class SQPClient:
         bits = data[1].split(",")
 
         indices = list(map(int, indices))
-        bits = list(map(int, bits))
+        self_bits = [int(self.shared_keys[msg.sender][idx]) for idx in indices]
+        other_bits = list(map(int, bits))
 
-        result = self.qkd_client.check_bits_at_indices(bits, indices, 1)
+        result = check_cropped_bits(self_bits, other_bits, indices, 1)
         self.send_message("RES CHECK", msg.sender, str(result))
 
     def handle_res(self, msg: SQPMessage) -> None:
@@ -143,9 +144,9 @@ class SQPClient:
             self.shared_keys[target] += str(self.qkd_client.bits[int(idx)])
         cprint("Final shared key: " + self.shared_keys[target])
 
-        indices = [random.randint(0, self.qkd_client.length - 1) for _ in range(4)]
-        bits = [int(self.qkd_client.bits[idx]) for idx in indices]
-        self.send_message("CHECK", target, ",".join(map(str, indices)) + "\n" + ",".join(map(str, bits)))
+        indices = random.sample(range(len(self.shared_keys[target]) - 1), 4)
+        bits = [self.shared_keys[target][idx] for idx in indices]
+        self.send_message("CHECK", target, ",".join(map(str, indices)) + "\n" + ",".join(bits))
 
         response = self.get_response_of_type("CHECK")
         if response.method == "ERR CHECK":
