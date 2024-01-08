@@ -1,7 +1,7 @@
-import threading
+import random
 import socket
 import sys
-import random
+import threading
 
 from protocol import SQPMessage
 from quantum.qkd import QKD, check_cropped_bits
@@ -65,6 +65,8 @@ class SQPClient:
             self.handle_basis(msg)
         elif msg.method == "CHECK":
             self.handle_check(msg)
+        elif msg.method == "MSG":
+            self.handle_msg(msg)
         elif msg.method == "ABORT":
             try:
                 self.shared_keys.pop(msg.sender)
@@ -98,6 +100,14 @@ class SQPClient:
 
         result = check_cropped_bits(self_bits, other_bits, 1)
         self.send_message("RES CHECK", msg.sender, str(result))
+
+    def handle_msg(self, msg: SQPMessage) -> None:
+        try:
+            key = int(self.shared_keys[msg.sender], 2)
+        except KeyError:
+            return
+        decrypted = "".join([chr(ord(char) ^ key) for char in msg.data])
+        cprint(f"{msg.sender}: {decrypted}")
 
     def handle_res(self, msg: SQPMessage) -> None:
         self.response_queue.append(msg)
@@ -165,6 +175,12 @@ class SQPClient:
             self.send_message("ABORT", target, "")
             return
 
+    def encrypt_and_send_message(self, target: str, msg: str) -> None:
+        key = int(self.shared_keys[target], 2)
+        encrypted = "".join([chr(ord(char) ^ key) for char in msg])
+
+        self.send_message("MSG", target, encrypted)
+
     def disconnect(self) -> None:
         self.send_message("DC", "server", "")
         self.socket.close()
@@ -172,9 +188,13 @@ class SQPClient:
 
 if __name__ == "__main__":
     hostname = input("Enter hostname: ")
+    ip = input("Enter IP (default: 127.0.0.1): ")
+
+    if ip == "":
+        ip = "127.0.0.1"
 
     client = SQPClient(hostname)
-    client.connect("127.0.0.1", 8484)
+    client.connect(ip, 8484)
     client.start_listening()
 
     print("> ", end="")
@@ -188,6 +208,25 @@ if __name__ == "__main__":
                 continue
             client.begin_qkd(target)
 
+        elif cmd.startswith("MSG"):
+            target = cmd.split(" ")[1]
+            msg = cmd.split(" ")[2:]
+
+            if target == hostname:
+                cprint("Target cannot be yourself!")
+                continue
+
+            if target not in client.shared_keys:
+                cprint("You have not established a common key with this host!")
+                continue
+
+            msg = " ".join(msg)
+            client.encrypt_and_send_message(target, msg)
+            cprint("> ")
+
         elif cmd == "EXIT":
             client.disconnect()
             sys.exit(0)
+
+        else:
+            cprint("> ")
