@@ -10,7 +10,7 @@ Currently has a basic BB84 implementation allowing users to create and send bits
 - [x] Implement a basic quantum API
 - [x] Implement a basic BB84 flow
 - [x] Implement a eavesdropper and see their effects
-- [ ] Create a socket-like protocol for communication across programs
+- [x] Create a socket-like protocol for communication across programs
 
 ## Simple Quantum Protocol (SQP)
 
