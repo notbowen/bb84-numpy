@@ -13,6 +13,23 @@ def random_bits(num: int) -> list[int]:
     return list(measure_all()(reg))
 
 
+def check_cropped_bits(self_cropped_bits: list[int], other_cropped_bits: list[int], threshold: float) -> bool:
+    """Checks if bits at specified indices match between the sender and receiver.
+
+    Args:
+        self_cropped_bits (list[int]): Your cropped bits
+        other_cropped_bits (list[int]): The other party's cropped bits
+        threshold (float): The threshold before this function returns false
+
+    Returns:
+        bool: Whether the bits at the specified indices match
+    """
+
+    bit_check = [True if self_bit == other_bit else False for self_bit, other_bit in
+                 zip(self_cropped_bits, other_cropped_bits)]
+    return bit_check.count(True) / len(bit_check) >= threshold
+
+
 class QKD:
     def __init__(self, length: int = 16, basis: list[int] | None = None, bits: list[int] | None = None) -> None:
         self.length = length
@@ -73,21 +90,4 @@ class QKD:
         """
 
         bit_check = [True if alice == bob else False for alice, bob in zip(self.bits, other_bits)]
-        return bit_check.count(True) / len(bit_check) >= threshold
-
-    def check_bits_at_indices(self, other_cropped_bits: list[int], indices: list[int], threshold: float) -> bool:
-        """Checks if bits at specified indices match between the sender and receiver.
-
-        Args:
-            other_cropped_bits (list[int]): The other party's cropped bits
-            indices (list[int]): The indices to check
-            threshold (float): The threshold before this function returns false
-
-        Returns:
-            bool: Whether the bits at the specified indices match
-        """
-
-        self_cropped_bits = [self.bits[i] for i in indices]
-        bit_check = [True if self_bit == other_bit else False for self_bit, other_bit in
-                     zip(self_cropped_bits, other_cropped_bits)]
         return bit_check.count(True) / len(bit_check) >= threshold
