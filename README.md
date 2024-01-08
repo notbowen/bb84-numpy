@@ -21,7 +21,7 @@ The shared bits can then be used for encrypting and decrypting messages.
 > Any request that this protocol sends does not have a clear-cut way
 > to determine a response packet, and race conditions may occur.
 > Adding a main port to listen for incoming requests, and having multiple
-> source ports may fix this issue, but time is of essence and I'm too
+> source ports may fix this issue, but time is of the essence and I'm too
 > lazy to implement this 😅
 
 A goofy ahh protocol I created for this project. It probably has a lot of
