@@ -65,6 +65,11 @@ class SQPClient:
             self.handle_basis(msg)
         elif msg.method == "CHECK":
             self.handle_check(msg)
+        elif msg.method == "ABORT":
+            try:
+                self.shared_keys.pop(msg.sender)
+            except KeyError:
+                pass
         elif msg.method[0:3] == "RES" or msg.method[0:3] == "ERR":
             self.handle_res(msg)
 
@@ -91,7 +96,7 @@ class SQPClient:
         self_bits = [int(self.shared_keys[msg.sender][idx]) for idx in indices]
         other_bits = list(map(int, bits))
 
-        result = check_cropped_bits(self_bits, other_bits, indices, 1)
+        result = check_cropped_bits(self_bits, other_bits, 1)
         self.send_message("RES CHECK", msg.sender, str(result))
 
     def handle_res(self, msg: SQPMessage) -> None:
@@ -153,6 +158,12 @@ class SQPClient:
             cprint("Error: " + response.data)
             return
         cprint("Check result: " + response.data)
+        result = response.data == "True"
+        if not result:
+            self.shared_keys.pop(target)
+            cprint("Check failed, aborting...")
+            self.send_message("ABORT", target, "")
+            return
 
     def disconnect(self) -> None:
         self.send_message("DC", "server", "")

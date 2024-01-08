@@ -1,14 +1,20 @@
 import socket
 import threading
+import argparse
 from loguru import logger
 
 from protocol import SQPMessage
+from quantum.qkd import QKD
 
 
 class SQPServer:
-    def __init__(self, host="0.0.0.0", port=8484):
+    def __init__(self, host="0.0.0.0", port=8484, eavesdrop=False):
         self.host = host
         self.port = port
+
+        self.eavesdrop = eavesdrop
+        self.qkd_client = QKD()
+
         self.connections = {}
 
     def disconnect(self, target: str) -> None:
@@ -36,8 +42,13 @@ class SQPServer:
                 self.disconnect(hostname)
                 return
 
+            if message.method == "RES GET" and self.eavesdrop:
+                logger.info(f"Eavesdropping on GET RES request from {hostname}")
+                self.qkd_client.recv(message.data)
+                message.data = self.qkd_client.send()
+
             try:
-                self.connections[message.target].send(msg)
+                self.connections[message.target].send(message.to_bytes())
                 logger.debug(f"{message.method} request sent to {message.target}")
             except KeyError:
                 error = SQPMessage()
@@ -80,5 +91,9 @@ class SQPServer:
 
 
 if __name__ == "__main__":
-    server = SQPServer()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-e", "--eavesdrop", action="store_true", help="Eavesdrop on the qubits")
+    args = parser.parse_args()
+
+    server = SQPServer(eavesdrop=args.eavesdrop)
     server.start()
