@@ -7,8 +7,8 @@ from protocol import SQPMessage
 from quantum.qkd import QKD, check_cropped_bits
 
 
-def cprint(msg: str) -> None:
-    print(f"\r{msg}\n> ", end="")
+def cprint(msg: str, end="\n") -> None:
+    print(f"\r{msg}{end}> ", end="")
 
 
 class SQPClient:
@@ -67,11 +67,6 @@ class SQPClient:
             self.handle_check(msg)
         elif msg.method == "MSG":
             self.handle_msg(msg)
-        elif msg.method == "ABORT":
-            try:
-                self.shared_keys.pop(msg.sender)
-            except KeyError:
-                pass
         elif msg.method[0:3] == "RES" or msg.method[0:3] == "ERR":
             self.handle_res(msg)
 
@@ -99,7 +94,19 @@ class SQPClient:
         other_bits = list(map(int, bits))
 
         result = check_cropped_bits(self_bits, other_bits, 1)
+        if not result:
+            self.shared_keys.pop(msg.sender)
+            self.send_message("RES CHECK", msg.sender, str(result))
+            return
+
+        final_key = ""
+        for i, bit in enumerate(self.shared_keys[msg.sender]):
+            if i not in indices:
+                final_key += bit
+        self.shared_keys[msg.sender] = final_key
+
         self.send_message("RES CHECK", msg.sender, str(result))
+
 
     def handle_msg(self, msg: SQPMessage) -> None:
         try:
@@ -172,8 +179,13 @@ class SQPClient:
         if not result:
             self.shared_keys.pop(target)
             cprint("Check failed, aborting...")
-            self.send_message("ABORT", target, "")
             return
+
+        final_key = ""
+        for i, bit in enumerate(self.shared_keys[target]):
+            if i not in indices:
+                final_key += bit
+        self.shared_keys[target] = final_key
 
     def encrypt_and_send_message(self, target: str, msg: str) -> None:
         key = int(self.shared_keys[target], 2)
@@ -222,7 +234,7 @@ if __name__ == "__main__":
 
             msg = " ".join(msg)
             client.encrypt_and_send_message(target, msg)
-            cprint("> ")
+            cprint("", end="")
 
         elif cmd == "EXIT":
             client.disconnect()
