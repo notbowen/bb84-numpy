@@ -13,7 +13,7 @@ The shared bits can then be used for encrypting and decrypting messages.
 - [x] Implement a eavesdropper and see their effects
 - [x] Create a socket-like protocol for communication across programs
 
-## Simple Quantum Protocol (SQP)
+## Child-Friendly Quantum Protocol (CQP)
 
 > Note from future self: This protocol's design tried to
 > copy a HTTP-style protocol. However, this project relies on
